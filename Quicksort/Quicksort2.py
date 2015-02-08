@@ -6,23 +6,24 @@ from math import floor
 from sys import setrecursionlimit
 setrecursionlimit(10000)
 
-def myQuicksort( sortarray=None, start = 0, end = -1, pivotType=None ):
+def myQuicksort2( A, start = 0, end = -1000, pivotType=None ):
 
 	# deliberately long name for global var
-	global myQuicksortArray
 	global myQuicksortComparisons
 
-	# sortarray will only be used in the initial call, not recursive ones
-	if ( sortarray is not None ):
-		myQuicksortArray = sortarray
+	# hackish way to check for the first (non-recursed) call of the function
+	if end == -1000:
+		recurse = 0
+		end = len( A ) - 1
 		myQuicksortComparisons = 0
-
-	if ( end == -1 ):
-		end = len( myQuicksortArray ) - 1
+	else:
+		recurse = 1
 
 	# base case (note: end - start == 1 means 2 elements in array...needs sorting)
 	if ( end - start ) < 1:
+		# sub = A[start:end+1]
 		# print "base case start/end: " + `start` + "/" + `end`
+		# print "sub: " + `sub`
 		# print
 		return;
 
@@ -34,12 +35,8 @@ def myQuicksort( sortarray=None, start = 0, end = -1, pivotType=None ):
 	# CHOOSING PIVOT
 	#
 
-	# RANDOM: the correct way to do it
-	if pivotType is None:
-		pivotIndex = randint( start, end )
-
 	# FIRST element
-	elif pivotType == 'first':
+	if pivotType == 'first':
 		pivotIndex = start
 
 	# LAST element
@@ -47,11 +44,11 @@ def myQuicksort( sortarray=None, start = 0, end = -1, pivotType=None ):
 		pivotIndex = end
 
 	# MEDIAN-OF-3 element
-	else:
-		first  = myQuicksortArray[ start ]
+	elif pivotType == 'median':
+		first  = A[ start ]
 		middleElement = start + int( floor( (end - start) / 2 ) )
-		middle = myQuicksortArray[ middleElement ]
-		last   = myQuicksortArray[ end ]
+		middle = A[ middleElement ]
+		last   = A[ end ]
 
 		if first > middle and middle > last:
 			pivotIndex = middleElement
@@ -60,29 +57,33 @@ def myQuicksort( sortarray=None, start = 0, end = -1, pivotType=None ):
 		else:
 			pivotIndex = end
 
+	# RANDOM: the correct way to do it
+	else:
+		print "RANDOM METHOD"
+		pivotIndex = randint( start, end )
 
-	pivotValue = myQuicksortArray[ pivotIndex ]
+	pivotValue = A[ pivotIndex ]
 
-	# print "initial: " + `myQuicksortArray`
+	sub = A[start:end+1]
+	# print "initial: " + `A`
+	# print "sub: " + `sub`
 	# print "start/end: " + `start` + "/" + `end`
 	# print "pivot index/value: " + `pivotIndex` + "/" + `pivotValue`
 
 	# if pivot is not first element, swap pivot and start elements
 	if pivotIndex != start:
-		swapValues( myQuicksortArray, pivotIndex, start )
-		# myQuicksortArray[ pivotIndex ] = myQuicksortArray[ start ];
-		# myQuicksortArray[ start ] = pivotValue;
+		swapValues( A, pivotIndex, start )
+		# A[ pivotIndex ] = A[ start ];
+		# A[ start ] = pivotValue;
 		# pivotIndex = start
 
 	i = start # location of where the pivot should go
 
 	for j in range( start + 1, end + 1 ):
 
-		jValue = myQuicksortArray[ j ]
+		jValue = A[ j ]
 
-		if jValue > pivotValue:
-			continue # just advance j
-		else:
+		if jValue < pivotValue:
 
 			# EXAMPLE:
 			# assume pivot = 5 (first element)
@@ -98,51 +99,60 @@ def myQuicksort( sortarray=None, start = 0, end = -1, pivotType=None ):
 			#     v       v               v
 			# 	[ 5 , 2 , 3 , 7 , 8 , 9 , 4 , 1 ]
 			#
+			#     i
+			#    piv  j ... -->
+			#     |   |
+			#     v   v
+			# 	[ 1 , 2 , 3 , 7 , 8 , 9 , 4 , 5 ]
+			#
 
 			# move i (ex: to where the "7" is)
 			i += 1
 
 			# give j the new (incremented) value of i (ex: 7)
-			# myQuicksortArray[ j ] = myQuicksortArray[ i ]
+			# A[ j ] = A[ i ]
 			
 			# give i the previous value of j (ex: 4)
-			# myQuicksortArray[ i ] = jValue
+			# A[ i ] = jValue
 
-			swapValues( myQuicksortArray, i, j )
+			swapValues( A, i, j )
+
+		# end if
 
 	# end for loop
 
 	# swap position of pivot (first element) and i-th element
-	# myQuicksortArray[ start ] = myQuicksortArray[ i ]
-	# myQuicksortArray[ i ] = pivotValue
-	swapValues( myQuicksortArray, start, i )
+	# A[ start ] = A[ i ]
+	# A[ i ] = pivotValue
+	swapValues( A, start, i )
 
 	# print "final i position: " + `i`
-	# print "value prior next recurse:" + `myQuicksortArray`
+	# print "value prior next recurse:" + `A`
 	# print " "
-
-	print 'next'
+	# print 'next'
+	
 	if i == start:
-		print myQuicksortArray[i+1:end+1]
-		myQuicksort( None, i + 1, end )
+		# print A[i+1:end+1]
+		myQuicksort2( A, i + 1, end, pivotType )
 	elif i == end:
-		print myQuicksortArray[start:i]
-		myQuicksort( None, start, i - 1 )
+		# print A[start:i]
+		myQuicksort2( A, start, i - 1, pivotType )
 	else:
-		print myQuicksortArray[start:i]
-		print myQuicksortArray[i+1:end+1]
+		# print A[start:i]
+		# print A[i+1:end+1]
 		# recursively call function on pre-pivot and post-pivot subarrays
-		myQuicksort( None, start, i - 1 )
-		myQuicksort( None, i + 1, end )
+		myQuicksort2( A, start, i - 1, pivotType )
+		myQuicksort2( A, i + 1, end, pivotType )
 
 	# print "i = " + `i`
 	# print "j = " + `j`
-	# print myQuicksortArray
+	# print A
 	# return
 
-	if ( sortarray is not None ):
-		# print "final output:" + `myQuicksortArray`
-		return [ myQuicksortArray, myQuicksortComparisons ]
+	# hackish way to check for the first (non-recursed) call of the function
+	if recurse == 0:
+		# print "final output:" + `A`
+		return [ A, myQuicksortComparisons ]
 	else:
 		return
 
