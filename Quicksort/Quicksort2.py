@@ -45,17 +45,7 @@ def myQuicksort2( A, start = 0, end = -1000, pivotType=None ):
 
 	# MEDIAN-OF-3 element
 	elif pivotType == 'median':
-		first  = A[ start ]
-		middleElement = start + int( floor( (end - start) / 2 ) )
-		middle = A[ middleElement ]
-		last   = A[ end ]
-
-		if first > middle and middle > last:
-			pivotIndex = middleElement
-		elif middle > first and first > last:
-			pivotIndex = start
-		else:
-			pivotIndex = end
+		pivotIndex = getMedianOfThreePosition( A, start, end )
 
 	# RANDOM: the correct way to do it
 	else:
@@ -130,7 +120,7 @@ def myQuicksort2( A, start = 0, end = -1000, pivotType=None ):
 	# print "value prior next recurse:" + `A`
 	# print " "
 	# print 'next'
-	
+
 	if i == start:
 		# print A[i+1:end+1]
 		myQuicksort2( A, i + 1, end, pivotType )
@@ -164,4 +154,23 @@ def swapValues ( arr, index1, index2 ):
 	arr[ index1 ] = val2
 	arr[ index2 ] = val1
 
+def getMedianOfThreePosition ( A, start, end ):
+
+	first  = A[ start ]
+	middleElement = getMiddleElement( start, end )
+	middle = A[ middleElement ]
+	last   = A[ end ]
+
+	if (first > middle and middle > last) or (last > middle and middle > first):
+		pivotIndex = middleElement
+	elif (middle > first and first > last) or (last > first and first > middle):
+		pivotIndex = start
+	else:
+		pivotIndex = end
+
+	return pivotIndex
+
+
+def getMiddleElement ( start, end ):
+	return start + int( floor( (end - start) / 2 ) )
 
