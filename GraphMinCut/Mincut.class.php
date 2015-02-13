@@ -88,7 +88,35 @@ class Mincut {
 
 	}
 
+	public function buildEdgesByVertex () {
+
+		$this->edgesByVertex = array();
+
+		foreach( $this->edges as $key => $edgeVertices ) {
+			$this->setEdgeByVertex( $edgeVertices[0], $key );
+			$this->setEdgeByVertex( $edgeVertices[1], $key );
+		}
+
+	}
+
+	public function setEdgesByVertex ( $ebv ) {
+		$this->edgesByVertex = $ebv;
+	}
+
+	protected function setEdgeByVertex ( $vertex, $edgeId ) {
+		if ( ! isset( $this->edgesByVertex[$vertex] ) ) {
+			$this->edgesByVertex[$vertex] = array( $edgeId );
+		}
+		else {
+			$this->edgesByVertex[$vertex][] = $edgeId;
+		}
+	}
+
 	public function contract () {
+
+		if ( ! isset( $this->edgesByVertex ) ) {
+			$this->buildEdgesByVertex();
+		}
 
 		while( count( $this->vertices ) > 2 ) {
 
@@ -114,8 +142,9 @@ class Mincut {
 		$edgeVertex0 = $this->edges[ $edge ][0];
 		$edgeVertex1 = $this->edges[ $edge ][1];
 
+		$this->fastMoveEdgesToMergedVertex( $edgeVertex0, $edgeVertex1 );
 		$this->mergeVertices( $edgeVertex0, $edgeVertex1 );
-		$this->moveEdgesToMergedVertex( $edgeVertex0, $edgeVertex1 );
+		// $this->moveEdgesToMergedVertex( $edgeVertex0, $edgeVertex1 );
 
 	}
 
@@ -131,6 +160,12 @@ class Mincut {
 			$this->vertices[ $v0 ],
 			$this->vertices[ $v1 ]
 		);
+
+		$this->edgesByVertex[ $v0 ] = array_merge(
+			$this->edgesByVertex[ $v0 ],
+			$this->edgesByVertex[ $v1 ]
+		);
+		unset( $this->edgesByVertex[ $v1 ] );
 		
 		// remove v1 from vertices array
 		unset( $this->vertices[ $v1 ] );
@@ -143,20 +178,22 @@ class Mincut {
 
 		foreach( $this->edges as $key => $edgeVertices ) {
 
-			// if an edge has both v0 and v1 as vertices, then moving the v1 end
-			// to v0 would make a self-loop. The edge should thus be removed.
-			if ( in_array( $v0, $edgeVertices ) && in_array( $v1, $edgeVertices ) ) {
-				$edgesToRemove[] = $key;
-			}
-
-			else if ( $edgeVertices[0] == $v1 ) {
-				$this->edges[$key][0] = $v0;
-				// $edgeVertices[0] = $v0;
+			if ( $edgeVertices[0] == $v1 ) {
+				if ( $edgeVertices[1] == $v0 ) {
+					$edgesToRemove[] = $key; // would-be self-loop
+				}
+				else {
+					$this->edges[$key][0] = $v0;
+				}
 			}
 
 			else if ( $edgeVertices[1] == $v1 ) {
-				$this->edges[$key][1] = $v0;
-				// $edgeVertices[1] = $v0;
+				if ( $edgeVertices[0] == $v0 ) {
+					$edgesToRemove[] = $key; // would-be self-loop
+				}
+				else {
+					$this->edges[$key][1] = $v0;
+				}
 			}
 
 		}
@@ -164,6 +201,56 @@ class Mincut {
 		foreach( $edgesToRemove as $keyToRemove ) {
 			unset( $this->edges[ $keyToRemove ] );
 		}
+
+	}
+
+	public function fastMoveEdgesToMergedVertex ( $v0, $v1 ) {
+
+		$edgesToRemove = array();
+		
+		// echo "\n";
+		// print_r( $this->edgesByVertex[ $v1 ] );
+		// echo "\ncount edges this vertex: " . count( $this->edgesByVertex[ $v1 ] );
+		// echo "\ncount total edges: " . count( $this->edges );
+		// echo "\nasdfa;lkajdsgklaj;sgdajsdg;ajsdg;ajsdg;ajsdg;ajkg;ajg;ajga";
+		// echo "\nEBV: " . count( $this->edgesByVertex );die();
+
+		foreach( $this->edgesByVertex[ $v1 ] as $edgeId ) {
+
+			if ( isset( $this->edges[ $edgeId ] ) ) {
+				$edgeVertices = $this->edges[ $edgeId ];
+			}
+			else {
+				continue; // edge already doesn't exist
+			}
+			$c0 = $edgeVertices[0]; $c1 = $edgeVertices[1];
+			// echo "\nEdge checked: ($c0, $c1) [looked for: $v0, $v1]";
+			if ( $edgeVertices[0] == $v1 ) {
+				if ( $edgeVertices[1] == $v0 ) {
+					$edgesToRemove[] = $edgeId; // would-be self-loop
+				}
+				else {
+					$this->edges[$edgeId][0] = $v0;
+				}
+			}
+
+			else if ( $edgeVertices[1] == $v1 ) {
+				if ( $edgeVertices[0] == $v0 ) {
+					$edgesToRemove[] = $edgeId; // would-be self-loop
+				}
+				else {
+					$this->edges[$edgeId][1] = $v0;
+				}
+			}
+
+		}
+
+		// echo "\ncount total edges: " . count( $this->edges );
+
+		foreach( $edgesToRemove as $keyToRemove ) {
+			unset( $this->edges[ $keyToRemove ] );
+		}
+		// echo "\ncount total edges: " . count( $this->edges );die();
 
 	}
 

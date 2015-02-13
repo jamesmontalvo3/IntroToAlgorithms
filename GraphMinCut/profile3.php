@@ -1,31 +1,43 @@
 <?php
 
+function profile ( $msg ) {
+
+	if ( ! isset( $GLOBALS['lastProfile'] ) ) {
+		$GLOBALS['lastProfile'] = microtime( true );
+		echo "$msg (profile initiated)\n";
+	}
+	else {
+		$duration = microtime( true ) - $GLOBALS['lastProfile'];
+		$GLOBALS['lastProfile'] = microtime( true );
+		echo "$msg (duration = $duration seconds)\n";
+	}
+
+}
+
+
+
+
 require_once __DIR__ . '/Mincut.class.php';
 
 $rawData = file_get_contents( __DIR__ . '/Assignment3Data.txt' );
 $graph = Mincut::formatAdjacencyList( $rawData );
 
 $graph->removeParallelEdges();
-$graph->buildEdgesByVertex();
 
 $startVertices = $graph->vertices;
 $startEdges = $graph->edges;
-$startEdgesByVertex = $graph->edgesByVertex;
 
-$iterations = pow( count($startVertices), 2 ) * log( count($startVertices) );
+$iterations = pow( count($startVertices), 2 ) * pow( count($startEdges), 1 );
 
 $minEdgeCount = $iterations; // massively overkill upper bound.
 $minEdgeCut = null;
 
-echo "Starting $iterations iterations\n";
-echo "0% complete\r";
+profile( "Starting $iterations iterations\n" );
 
-$start = microtime( true );
 
 for( $i = 0; $i < $iterations; $i++ ) {
 
 	$graph = new Mincut( $startVertices, $startEdges );
-	$graph->setEdgesByVertex( $startEdgesByVertex );
 	$graph->contract();
 
 	if ( $graph->countEdges() < $minEdgeCount ) {
@@ -33,13 +45,7 @@ for( $i = 0; $i < $iterations; $i++ ) {
 		$minEdgeCut = $graph->printEdges();
 	}
 
-	$duration = ( microtime( true ) - $start );
-	$fractionComplete = ($i + 1) / $iterations;
-	$minutesRemain = round( ( $duration / $fractionComplete ) / ( 60 ), 1 );
-	$percentComplete = round( $fractionComplete * 100, 6 );
-
-	echo "                                                                            \r";
-	echo "i=$i, $percentComplete%, $minutesRemain min remain, min cut = $minEdgeCount)\r";
+	profile( "iteration $i" );
 
 }
 
