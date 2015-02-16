@@ -2,7 +2,48 @@
 // Description: Calculate Strongly Connected Components of a graph
 
 #include <iostream>
+#include <fstream>
+#include <string>
 using namespace std;
+
+
+
+
+
+
+int load() {
+
+  ifstream sccTextFile;
+  sccTextFile.open("SCC.txt");
+  string line;
+  int firstSpace;
+  string intOne;
+  string intTwo;
+  int int1 = 0;
+  int int2 = 0;
+  if (sccTextFile.is_open()) {
+    
+    for ( int x = 0; x < 5; x++ ) {
+    //while ( ! sccTextFile.eof() ) {
+    
+      getline( sccTextFile, line );
+      cout << line << endl;
+
+
+      firstSpace = line.find( ' ' );
+      intOne = line.substr( 0, firstSpace );
+      intTwo = line.substr( firstSpace + 1, line.find( ' ', firstSpace + 1 ) );
+
+      cout << "First int: " << intOne << endl;
+      cout << "Second int: " << intTwo << endl;
+
+      int1 = atoi( intOne.c_str() );
+      int2 = atoi( intTwo.c_str() );
+    }
+  }
+  sccTextFile.close();
+  return int1 + int2;
+}
 
 
 
@@ -49,6 +90,8 @@ int main()
   int t = 0;
   int s = 0;
   int myDfs = 10000;
+
+  load();
 
   if ( ! t && ! s ) {
     myDfs = dfs( 1, 2 );
