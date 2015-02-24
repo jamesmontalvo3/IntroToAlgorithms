@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 
@@ -21,27 +22,39 @@ int load() {
   string intTwo;
   int int1 = 0;
   int int2 = 0;
+
+
+
+  // vector< vector<int> > buff(10);
+  vector< vector<int> > edges;
+
+
   if (sccTextFile.is_open()) {
     
     for ( int x = 0; x < 5; x++ ) {
-    //while ( ! sccTextFile.eof() ) {
+    // while ( ! sccTextFile.eof() ) {
     
       getline( sccTextFile, line );
-      cout << line << endl;
-
+      // cout << line << endl;
 
       firstSpace = line.find( ' ' );
       intOne = line.substr( 0, firstSpace );
       intTwo = line.substr( firstSpace + 1, line.find( ' ', firstSpace + 1 ) );
 
-      cout << "First int: " << intOne << endl;
-      cout << "Second int: " << intTwo << endl;
+      // edges[x][0] = atoi( intOne.c_str() );
+      // edges[x][1] = atoi( intTwo.c_str() );
+      edges[x].push_back( intOne.c_str() );
+      edges[x].push_back( intTwo.c_str() );
 
-      int1 = atoi( intOne.c_str() );
-      int2 = atoi( intTwo.c_str() );
+
+
     }
   }
   sccTextFile.close();
+
+  cout << "First int: " << edges[3][0] << endl;
+  cout << "Second int: " << edges[3][1] << endl;
+
   return int1 + int2;
 }
 
